@@ -3,7 +3,7 @@ import random
 res = [random.randrange(1, 1001, 1) for i in range(100)]
 print(res)  #
 new_res = []
-
+# Comment
 while res:
     minimum = res[0]
     for x in res:
