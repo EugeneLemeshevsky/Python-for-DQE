@@ -10,9 +10,11 @@ text = '''homEwork:
 	last iz TO calculate nuMber OF Whitespace characteRS in this Text. caREFULL, not only Spaces, but ALL whitespaces. I got 87.'''
 
 normalized_text = text.lower()
-sentences = re.split(r'\.\s|\n|\t', normalized_text)  # Breaking the text into sentences
-for s in sentences:
-    normalized_text = normalized_text.replace(s, s.capitalize())  # Each sentence will start with a capital letter
+sentences = re.split(r'[.|:]\s*', normalized_text)  # Breaking the text into sentences
+sep = re.findall(r'[.|:]\s*', normalized_text)  # Create list for sentence separators
+normalized_text = ''
+for s, p in zip(sentences, sep):
+    normalized_text += s.capitalize() + p  # Each sentence will start with a capital letter
 
 last_words = re.findall(r'(\b\w+)\.', normalized_text)  # Finding the last words in sentences
 last_sentence = ' '.join(last_words).capitalize()  # Creating a sentence from the last words of each sentence
@@ -23,8 +25,7 @@ clear_text = normalized_text.replace(' iz ', ' is ')  # Replacing all “iz” w
 
 final_text = re.sub(r'(\w)(“)', r'\1 \2', clear_text)  # Fix missing space before "iz"
 
-spaces_number = len(re.findall(r'\s', final_text))  # Finding the number of spaces
+spaces_number = len(re.findall(r'\s', text))  # Finding the number of spaces
 
 print(final_text)
 print('Number of spaces =', spaces_number)
-
