@@ -2,9 +2,11 @@ import random
 import string
 
 
-# List of random number of dicts (n) with random number of keys (max_dict_len) and values from 0 to 100 generation
-def generate_list(n, max_dict_len):
+def generate_list(n):
+    """List of random number of dicts (n) with random number of keys (max_dict_len) and values from 0 to 100
+    generation """
     res = []
+    max_dict_len = len(string.ascii_lowercase)  # Set the max dict length
     for i in range(n):
         dict_len = random.randrange(1, max_dict_len, 1)
         rand_string = ''.join(random.sample(string.ascii_lowercase, dict_len))
@@ -13,22 +15,26 @@ def generate_list(n, max_dict_len):
     return res
 
 
-# Dictionary with the count of each key in all dictionaries
+def dict_with_unique_keys(list_of_dicts):
+    return dict.fromkeys(list(set().union(*list_of_dicts)), 0)
+
+
 def keys_count(list_of_dicts):
-    count_keys = dict.fromkeys(list(set().union(*list_of_dicts)), 0)
+    """Dictionary with the count of each key in all dictionaries"""
+    count_keys = dict_with_unique_keys(list_of_dicts)
     for k in count_keys:
         count = 0
-        for d in res:
+        for d in list_of_dicts:
             if k in d.keys():
                 count += 1
         count_keys[k] = count
     return count_keys
 
 
-# get generated list of dicts and create one common dict
+
 def common_dict(list_of_dicts, count_keys_dict):
-    # Dict with all unique keys from res with 0 values
-    new_res_dict = dict.fromkeys(list(set().union(*list_of_dicts)), 0)
+    """get generated list of dicts and create one common dict"""
+    new_res_dict = dict_with_unique_keys(list_of_dicts)  # Dict with all unique keys from res with 0 values
     changed_keys = {}
 
     # Creating one common dict with keys and their corresponding max values.
@@ -51,9 +57,9 @@ def common_dict(list_of_dicts, count_keys_dict):
     return new_res_dict
 
 
-n = random.randrange(2, 11, 1)  # Generate number of dicts
-max_dict_len = len(string.ascii_lowercase)  # Set the max dict length
-res = generate_list(n, max_dict_len)
-count_keys = keys_count(res)
+if __name__ == "__main__":
+    n = random.randrange(2, 11, 1)  # Generate number of dicts
+    res = generate_list(n)
+    count_keys = keys_count(res)
 
-print(common_dict(res, count_keys))
+    print(common_dict(res, count_keys))

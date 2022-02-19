@@ -12,7 +12,7 @@ def normalize_text(text, sep_regexp):
 
 
 # Creating a sentence from the last words of each sentence
-def add_sentence(text):
+def create_and_add_sentence(text):
     last_words = re.findall(r'(\b\w+)\.', text)  # Finding the last words in sentences
     last_sentence = ' '.join(last_words).capitalize()  # Creating a sentence from the last words of each sentence
     last_sentence += '.'
@@ -39,5 +39,6 @@ final_text = re.sub(r'(\w)(“)', r'\1 \2', clear_text)  # Fix missing space bef
 
 spaces_number = len(re.findall(r'\s', text))  # Finding the number of spaces
 
-print(final_text)
-print('Number of spaces =', spaces_number)
+if __name__ == "__main__":
+    print(final_text)
+    print('Number of spaces =', spaces_number)
