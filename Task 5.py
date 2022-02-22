@@ -40,12 +40,15 @@ class PrivateAd(Generic):
         super().__init__(self.newsfeed_type)
         self._text = text
         self.exp_date = exp_date
-        self._additional_info = f'Actual until: {exp_date}, ' \
-                                f'{(datetime.strptime(exp_date, "%Y-%m-%d") - datetime.now()).days} days left'
+        self._additional_info = self.__calculate_days_left(exp_date)
+
+    def __calculate_days_left(self, additional_info):
+        if additional_info is not None:
+            return f'Actual until: {additional_info}, ' \
+                   f'{(datetime.strptime(additional_info, "%Y-%m-%d") - datetime.now()).days} days left'
 
     def set_additional_info_user_input(self, additional_info):
-        self._additional_info = f'Actual until: {additional_info}, ' \
-                                f'{(datetime.strptime(additional_info, "%Y-%m-%d") - datetime.now()).days} days left'
+        self._additional_info = self.__calculate_days_left(additional_info)
 
 
 class Product(Generic):
@@ -57,17 +60,18 @@ class Product(Generic):
         self._additional_info = f"Price: {price} BYN, {self.__calculate_price_level(price)}"
 
     def __calculate_price_level(self, price):
-        for k, v in self.__levels.items():
-            if float(price) < v:
-                return k
-        else:
-            return 'very expensive'
+        if price is not None:
+            for k, v in self.__levels.items():
+                if float(price) < v:
+                    return k
+                else:
+                    return 'very expensive'
 
     def set_additional_info_user_input(self, additional_info):
         self._additional_info = f"Price: {additional_info} BYN, {self.__calculate_price_level(additional_info)}"
 
 
-def validate_date(date_text):
+def validate_date_format(date_text):
     try:
         if date_text != datetime.strptime(date_text, "%Y-%m-%d").strftime("%Y-%m-%d"):
             raise ValueError
@@ -76,31 +80,41 @@ def validate_date(date_text):
         return False
 
 
-with open("newsfeed.txt", "a") as file:
-    while True:
-        i = input('What do you want to enter (1 - news, 2 - Private Ad, 3 - Product, 0 - exit): ')
-        supported_articles = {'1': 'News()', '2': 'PrivateAd()'}
-        a = eval(supported_articles[i]).set_text_user_input(input('Enter news text: '))
+def validate_date(date_text):
+    try:
+        if datetime.strptime(date_text, "%Y-%m-%d") < datetime.now():
+            raise ValueError
+        return True
+    except ValueError:
+        return False
 
-        if i == "1":
-            news = News()
-            news.set_text_user_input(input('Enter news text: '))
-            news.set_additional_info_user_input(input('Enter city: '))
-            file.write(news.get_content())
-        elif i == "2":
-            privatead = PrivateAd()
-            privatead.set_text_user_input(input('Enter private ad text: '))
-            expiration_date = input('Enter private ad expiration date: ')
-            while not validate_date(expiration_date):
-                expiration_date = input('Please enter date in format %Y-%m-%d: ')
-            privatead.set_additional_info_user_input(expiration_date)
-            file.write(privatead.get_content())
-        elif i == "3":
-            product = Product()
-            product.set_text_user_input(input('Enter product name: '))
-            product.set_additional_info_user_input(input('Enter product price: '))
-            file.write(product.get_content())
-        elif i == "0":
-            break
-        else:
-            print('Wrong input!')
+
+if __name__ == "__main__":
+    with open("newsfeed.txt", "a") as file:
+        while True:
+            i = input('What do you want to enter (1 - news, 2 - Private Ad, 3 - Product, 0 - exit): ')
+
+            if i == "1":
+                news = News()
+                news.set_text_user_input(input('Enter news text: '))
+                news.set_additional_info_user_input(input('Enter city: '))
+                file.write(news.get_content())
+            elif i == "2":
+                privatead = PrivateAd()
+                privatead.set_text_user_input(input('Enter private ad text: '))
+                expiration_date = input('Enter private ad expiration date: ')
+                while not validate_date_format(expiration_date):
+                    expiration_date = input('Please enter date in format %Y-%m-%d: ')
+                while not validate_date(expiration_date):
+                    expiration_date = input(f'Please enter date greater than {datetime.now()}: ')
+                privatead.set_additional_info_user_input(expiration_date)
+                file.write(privatead.get_content())
+            elif i == "3":
+                product = Product()
+                product.set_text_user_input(input('Enter product name: '))
+                product.set_additional_info_user_input(input('Enter product price: '))
+                file.write(product.get_content())
+            elif i == "0":
+                break
+            else:
+                print('Wrong input!')
