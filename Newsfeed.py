@@ -89,6 +89,13 @@ def validate_date(date_text):
         return False
 
 
+def validate_price(price_text):
+    try:
+        float(price_text)
+        return True
+    except ValueError:
+        return False
+
 if __name__ == "__main__":
     with open("newsfeed.txt", "a") as file:
         while True:
