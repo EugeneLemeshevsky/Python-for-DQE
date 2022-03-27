@@ -89,7 +89,14 @@ def validate_date(date_text):
         return False
 
 
-if __name__ == "__main__":
+def validate_price(price_text):
+    try:
+        float(price_text)
+        return True
+    except ValueError:
+        return False
+
+def add_record():
     with open("newsfeed.txt", "a") as file:
         while True:
             i = input('What do you want to enter (1 - news, 2 - Private Ad, 3 - Product, 0 - exit): ')
@@ -118,3 +125,7 @@ if __name__ == "__main__":
                 break
             else:
                 print('Wrong input!')
+
+
+if __name__ == "__main__":
+    add_record()
