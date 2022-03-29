@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 
 
@@ -17,10 +18,6 @@ class Generic:
 
     def get_content(self):
         return '\n'.join([self.newsfeed_header, self._text, self._additional_info, self.footer])
-
-    def collect_info(self):
-        self.set_text_user_input()
-        self.set_additional_info_user_input()
 
 
 class News(Generic):
@@ -96,8 +93,9 @@ def validate_price(price_text):
     except ValueError:
         return False
 
-def add_record():
-    with open("newsfeed.txt", "a") as file:
+def add_record(output_directory='.', file_name='newsfeed.txt'):
+    newsfeed_file_path = os.path.join(output_directory, file_name)
+    with open(newsfeed_file_path, "a") as file:
         while True:
             i = input('What do you want to enter (1 - news, 2 - Private Ad, 3 - Product, 0 - exit): ')
 

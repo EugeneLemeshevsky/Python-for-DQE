@@ -4,7 +4,7 @@ from Text_normalization import normalize_text
 
 
 class Parser:
-    def __new__(cls, working_directory='records'):
+    def __new__(cls, working_directory='records', output_directory='newsfeed'):
         if not os.path.exists(working_directory):
             print(f"Directory '{working_directory}' does not exists!!!")
             return None
@@ -15,17 +15,13 @@ class Parser:
             return super().__new__(cls)
 
     def __init__(self, working_directory='records', output_directory='newsfeed',
-                 newsfeed_file_name='newsfeed'):
+                 newsfeed_file_name='newsfeed.txt'):
         self.working_directory = working_directory
         self.files_list = list(filter(lambda x: x.endswith('.txt'), os.listdir(working_directory)))
         if not os.path.exists(output_directory):
             os.mkdir(output_directory)
-        newsfeed_file_name += '.txt'
         self.newsfeed_file_path = os.path.join(output_directory, newsfeed_file_name)
-        self.set_separators_regexp()
-
-    def set_separators_regexp(self, s=r'[.]\s*'):
-        self.separators = s
+        self.separators = r'[.]\s*'
 
     def parse_directory(self):
         for f in self.files_list:
@@ -66,8 +62,7 @@ class Parser:
         else:
             os.remove(file_path)
         if len(wrong_records) != 0:
-            head_tail = os.path.split(file_path)
-            wrong_records_file_path = os.path.join(head_tail[0], head_tail[1][:-4]+'_wrong_records.txt')
+            wrong_records_file_path = file_path.replace('.txt', '_wrong_records.txt')
             with open(wrong_records_file_path, "w") as file:
                 for item in wrong_records:
                     file.write(item+'\n\n\n')
