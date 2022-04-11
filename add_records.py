@@ -1,5 +1,5 @@
 from Newsfeed import add_record
-from Parse_from_files import TxtParser, JsonParser
+from Parse_from_files import TxtParser, JsonParser, XmlParser
 from word_letter_calculator import WordCalculator, LetterCalculator
 
 if __name__ == '__main__':
@@ -13,7 +13,7 @@ if __name__ == '__main__':
     elif a == '2':
         input_dir = input("Input directory with records (Press 'Enter' to use default (./records)) directory: ")
         input_dir = input_dir if input_dir != '' else 'records'
-        fmt = input('What format of records? (1 - txt,  2 - json) (default txt): ')
+        fmt = input('What format of records? (1 - txt,  2 - json, 3 - xml) (default txt): ')
         parser = ""
         file_ext = ""
         if fmt == "2":
@@ -25,9 +25,7 @@ if __name__ == '__main__':
         else:
             parser = "TxtParser"
             file_ext = ".txt"
-        print(f'file_ext={file_ext}')
         cmd = parser + "(working_directory=input_dir, output_directory=output_dir, newsfeed_file_name=file_name, input_file_extension=file_ext)"
-        print(cmd)
         p = eval(cmd)
         if p is not None:
             p.parse_directory()

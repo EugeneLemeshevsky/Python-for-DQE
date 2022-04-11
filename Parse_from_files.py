@@ -1,17 +1,14 @@
 import os
-from typing import List
-
 from Newsfeed import News, PrivateAd, Product, validate_date_format, validate_date, validate_price
 from Text_normalization import normalize_text
 import json
+import xml.etree.ElementTree as et
 
 
 class Parser:
     def __new__(cls, working_directory, output_directory,
                 newsfeed_file_name, input_file_extension):
-        print(input_file_extension)
         file_lst: list[str] = list(filter(lambda x: x.endswith(input_file_extension), os.listdir(working_directory)))
-        print(file_lst)
         if not os.path.exists(working_directory):
             print(f"Directory '{working_directory}' does not exists!!!")
             return None
@@ -48,14 +45,12 @@ class Parser:
                 print(f"File {file_path} contains wrong records.")
                 wrong_records.append(item)
         if c < len(self.feed_list):
-            with open(file_path, "w") as file:
-                for item in self.feed_list[c:]:
-                    file.write(item+'\n\n\n')
+            self.save_records(file_path, self.feed_list[c:])
         else:
             os.remove(file_path)
         if len(wrong_records) != 0:
             wrong_records_file_path = file_path.replace(self.input_file_extension, '_wrong_records'+self.input_file_extension)
-            self.save_wrong_records(wrong_records_file_path, wrong_records)
+            self.save_records(wrong_records_file_path, wrong_records)
 
     def _add_record(self, data):
         if data['type'] == "PrivateAd" and not (validate_date_format(data['additional_info']) and validate_date(data['additional_info'])):
@@ -65,6 +60,7 @@ class Parser:
                 print('Wrong price format!')
                 return False
         else:
+            print(f'data = {data}')
             r = eval(data['type'] + '()')
             r.set_text_user_input(normalize_text(data['text'], self.separators))
             r.set_additional_info_user_input(data['additional_info'])
@@ -77,7 +73,7 @@ class Parser:
         raise NotImplementedError()
 
 
-    def save_wrong_records(self, file_path, wrong_records):
+    def save_records(self, file_path, records):
         raise NotImplementedError()
 
 
@@ -94,9 +90,9 @@ class TxtParser(Parser):
             data = item.split('\n-\n')
             self.feed_list.append({'type': data[0], 'text': data[1], 'additional_info': data[2]})
 
-    def save_wrong_records(self, wrong_records_file_path, wrong_records):
-        with open(wrong_records_file_path, "w") as file:
-            for item in wrong_records:
+    def save_records(self, file_path, records):
+        with open(file_path, "w") as file:
+            for item in records:
                 file.write('\n-\n'.join(item.values()))
                 file.write('\n\n\n')
 
@@ -111,9 +107,40 @@ class JsonParser(Parser):
         with open(file_path, 'r') as f:
             self.feed_list = json.load(f)
 
-    def save_wrong_records(self, wrong_records_file_path, wrong_records):
-        with open(wrong_records_file_path, "w") as file:
-            file.write(json.dumps(wrong_records, indent=4))
+    def save_records(self, file_path, records):
+        with open(file_path, "w") as file:
+            file.write(json.dumps(records, indent=4))
+
+
+class XmlParser(Parser):
+    def __init__(self, working_directory='records', output_directory='newsfeed',
+                 newsfeed_file_name='newsfeed.txt', input_file_extension='.xml'):
+        super().__init__(working_directory=working_directory, output_directory=output_directory,
+                         newsfeed_file_name=newsfeed_file_name, input_file_extension=input_file_extension)
+
+    def get_feed_data(self, file_path):
+        tree = et.parse(file_path)
+        root = tree.getroot()
+        for item in root.findall('item'):
+            record = {}
+            for child in item:
+                record[child.tag] = child.text
+            self.feed_list.append(record)
+        print(f'feed_data = {self.feed_list}')
+
+    def save_records(self, file_path, records):
+        with open(file_path, "wb") as file:
+            xml_records = et.Element('records')
+            for item in records:
+                it = et.SubElement(xml_records, 'item')
+                type_item = et.SubElement(it, 'type')
+                type_item.text = item['type']
+                text_item = et.SubElement(it, 'text')
+                text_item.text = item['text']
+                add_info_item = et.SubElement(it, 'additional_info')
+                add_info_item.text = item['additional_info']
+            rec_xml = et.tostring(xml_records)
+            file.write(rec_xml)
 
 
 if __name__ == "__main__":
