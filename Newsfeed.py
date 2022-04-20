@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-
+from NewsfeedSQLiteDB import NewsfeedSQLiteRepository
 
 class Generic:
     def __init__(self, newsfeed_type):
@@ -95,34 +95,60 @@ def validate_price(price_text):
 
 def add_record(output_directory='.', file_name='newsfeed.txt'):
     newsfeed_file_path = os.path.join(output_directory, file_name)
-    with open(newsfeed_file_path, "a") as file:
-        while True:
-            i = input('What do you want to enter (1 - news, 2 - Private Ad, 3 - Product, 0 - exit): ')
-
-            if i == "1":
-                news = News()
-                news.set_text_user_input(input('Enter news text: '))
-                news.set_additional_info_user_input(input('Enter city: '))
-                file.write(news.get_content())
-            elif i == "2":
-                privatead = PrivateAd()
-                privatead.set_text_user_input(input('Enter private ad text: '))
-                expiration_date = input('Enter private ad expiration date: ')
-                while not validate_date_format(expiration_date):
-                    expiration_date = input('Please enter date in format %Y-%m-%d: ')
-                while not validate_date(expiration_date):
-                    expiration_date = input(f'Please enter date greater than {datetime.now()}: ')
-                privatead.set_additional_info_user_input(expiration_date)
-                file.write(privatead.get_content())
-            elif i == "3":
-                product = Product()
-                product.set_text_user_input(input('Enter product name: '))
-                product.set_additional_info_user_input(input('Enter product price: '))
-                file.write(product.get_content())
-            elif i == "0":
-                break
+    file_ext = file_name.split('.')[1]
+    while True:
+        i = input('What do you want to enter (1 - news, 2 - Private Ad, 3 - Product, 0 - exit): ')
+        if i == "1":
+            news = News()
+            news.set_text_user_input(input('Enter news text: '))
+            news.set_additional_info_user_input(input('Enter city: '))
+            if file_ext == 'txt':
+                with open(newsfeed_file_path, "a") as file:
+                    file.write(news.get_content())
+            elif file_ext == 'sqlite':
+                with NewsfeedSQLiteRepository(newsfeed_file_path) as db:
+                    table = 'News'
+                    content = news.get_content().split('\n')
+                    db.add_record(table, content[1], content[2])
             else:
-                print('Wrong input!')
+                print(f"Format {file_ext} does not support!!!")
+        elif i == "2":
+            privatead = PrivateAd()
+            privatead.set_text_user_input(input('Enter private ad text: '))
+            expiration_date = input('Enter private ad expiration date: ')
+            while not validate_date_format(expiration_date):
+                expiration_date = input('Please enter date in format %Y-%m-%d: ')
+            while not validate_date(expiration_date):
+                expiration_date = input(f'Please enter date greater than {datetime.now()}: ')
+            privatead.set_additional_info_user_input(expiration_date)
+            if file_ext == 'txt':
+                with open(newsfeed_file_path, "a") as file:
+                    file.write(privatead.get_content())
+            elif file_ext == 'sqlite':
+                with NewsfeedSQLiteRepository(newsfeed_file_path) as db:
+                    table = 'PrivateAd'
+                    content = privatead.get_content().split('\n')
+                    db.add_record(table, content[1], content[2])
+            else:
+                print(f"Format {file_ext} does not support!!!")
+        elif i == "3":
+            product = Product()
+            product.set_text_user_input(input('Enter product name: '))
+            product.set_additional_info_user_input(input('Enter product price: '))
+            if file_ext == 'txt':
+                with open(newsfeed_file_path, "a") as file:
+                    file.write(product.get_content())
+            elif file_ext == 'sqlite':
+                with NewsfeedSQLiteRepository(newsfeed_file_path) as db:
+                    table = 'Product'
+                    content = product.get_content().split('\n')
+                    db.add_record(table, content[1], content[2])
+            else:
+                print(f"Format {file_ext} does not support!!!")
+        elif i == "0":
+            break
+        else:
+            print('Wrong input!')
 
 
 if __name__ == "__main__":

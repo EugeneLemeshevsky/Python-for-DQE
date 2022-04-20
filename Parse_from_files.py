@@ -3,6 +3,7 @@ from Newsfeed import News, PrivateAd, Product, validate_date_format, validate_da
 from Text_normalization import normalize_text
 import json
 import xml.etree.ElementTree as et
+from NewsfeedSQLiteDB import NewsfeedSQLiteRepository
 
 
 class Parser:
@@ -60,14 +61,21 @@ class Parser:
                 print('Wrong price format!')
                 return False
         else:
-            print(f'data = {data}')
             r = eval(data['type'] + '()')
             r.set_text_user_input(normalize_text(data['text'], self.separators))
             r.set_additional_info_user_input(data['additional_info'])
-            file = open(self.newsfeed_file_path, "a")
-            file.write(r.get_content())
-            file.close()
+            file_ext = self.newsfeed_file_path.split('.')[1]
+            if file_ext == 'txt':
+                with open(self.newsfeed_file_path, "a") as file:
+                    file.write(r.get_content())
+            elif file_ext == 'sqlite':
+                with NewsfeedSQLiteRepository(self.newsfeed_file_path) as db:
+                    content = r.get_content().split('\n')
+                    db.add_record(data['type'], content[1], content[0])
+            else:
+                print(f'Format {file_ext} does not support!')
             return True
+
 
     def get_feed_data(self, file_path):
         raise NotImplementedError()

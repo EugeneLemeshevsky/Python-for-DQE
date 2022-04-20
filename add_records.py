@@ -30,9 +30,10 @@ if __name__ == '__main__':
         if p is not None:
             p.parse_directory()
 
-    wc = WordCalculator(working_directory=output_dir, filename=file_name)
-    lc = LetterCalculator(working_directory=output_dir, filename=file_name)
-    wc.calculate_words()
-    wc.save_csv()
-    lc.calculate_letters()
-    lc.save_csv()
+    if file_name.split('.')[1] == 'txt':
+        wc = WordCalculator(working_directory=output_dir, filename=file_name)
+        lc = LetterCalculator(working_directory=output_dir, filename=file_name)
+        wc.calculate_words()
+        wc.save_csv()
+        lc.calculate_letters()
+        lc.save_csv()
